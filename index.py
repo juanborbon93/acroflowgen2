@@ -201,5 +201,5 @@ def get_options(previous):
 
 if __name__ == '__main__':
     # app.server.run(host='0.0.0.0', port=5000,debug=True) 
-    # app.run_server()
-    serve(server,host='0.0.0.0', port=5000)
+    app.run_server(host='0.0.0.0', port=5000)
+    # serve(server,host='0.0.0.0', port=5000)
