@@ -5,7 +5,7 @@ from dash.dependencies import Input, Output, State
 from waitress import serve
 from pony import orm
 from app import app,server
-# from db import *
+from db import *
 
 
 app.layout = html.Div([
@@ -73,7 +73,7 @@ def show_page(pathname):
     [Input('flow-state','data')]
 )
 def show_flow(flow_state):
-    videos = [show_video() for i in flow_state['transitions']]
+    videos = [show_video(i) for i in flow_state['transitions']]
     return videos
 
 @app.callback(
@@ -81,30 +81,41 @@ def show_flow(flow_state):
     [Input('submit','n_clicks'),
     Input('restart','n_clicks'),
     Input('remove','n_clicks')],
-    [State('flow-state','data')]
+    [State('flow-state','data'),
+    State('move-selection','value')]
 )
-def update_flow(submit,restart,remove,state):
-    print(submit,restart)
-    if submit is not None:
-        if state['submit_clicks']<submit:
-            state['transitions'].append('new')
-            state['submit_clicks'] = submit
-    if restart is not None:
-        if state['restart_clicks']<restart:
-            state['transitions'] = []
-            state['restart_clicks'] = restart
-    if remove is not None:
-        if state['remove_clicks']<remove:
-            state['transitions'].pop()
-            state['remove_clicks'] = remove
-    print(state)
-    return state
+def update_flow(submit,restart,remove,state,pose):
+    with db_session:
+        if submit is not None:
+            if state['submit_clicks']<submit:
+                print(pose)
+                if pose=='random' or pose == None:
+                    if len(state['transitions'])>0:
+                        previous = Transitions[state['transitions'][-1]['id']].end
+                        elegible_transitions = select(i for i in Transitions if i.start == previous)
+                    else:
+                        elegible_transitions = select(i for i in Transitions)
+                else:
+                    elegible_transitions = select(i for i in Transitions if i.end==Poses[int(pose)])
+                transition = elegible_transitions.random(1)
+                alternate = len(elegible_transitions)>1 and pose!='random'
+                state['transitions'].append({'alternate':alternate ,'id':transition[0].index})
+                state['submit_clicks'] = submit
+        if restart is not None:
+            if state['restart_clicks']<restart:
+                state['transitions'] = []
+                state['restart_clicks'] = restart
+        if remove is not None:
+            if state['remove_clicks']<remove:
+                state['transitions'].pop()
+                state['remove_clicks'] = remove
+        print(state)
+        return state
 
 @app.callback(
     Output('remove','style'),
     [Input('flow-state','data')]
 )
-
 def show_remove(data):
     if len(data['transitions'])==0:
         return {'display':'none'}
@@ -123,7 +134,7 @@ def show_restart(data):
     Output('submit','children'),
     [Input('flow-state','data')]
 )
-def show_restart(data):
+def update_submit(data):
     if len(data['transitions'])==0:
         return 'GET FIRST'
     return 'GET NEXT'
@@ -132,15 +143,19 @@ def show_restart(data):
     Output('control-instructions','children'),
     [Input('flow-state','data')]
 )
-def show_restart(data):
+def update_instructions(data):
     if len(data['transitions'])==0:
         return 'Pick Starting Position:'
     return 'Pick Next Position:'
 
-def show_video():
+@db_session()
+def show_video(transition):
+    start = Transitions[transition['id']].start.name
+    end = Transitions[transition['id']].end.name
+    youtube_id = transition['id']
     video = html.Div([
         html.Iframe(
-                src= "https://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&loop=1",
+                src= f"https://www.youtube.com/embed/{youtube_id}?autoplay=1&loop=1",
                 style={
                     'position': 'absolute',
                     'top': '0',
@@ -159,19 +174,31 @@ def show_video():
     )
     return html.Div(
         [
-            html.H2('A to B'),
+            html.H2(f'{start} to {end}'),
             video
         ]
     )
+@app.callback(
+    Output('move-selection','options'),
+    [Input('flow-state','data')]
+)
+def update_options(state):
+    with db_session:
+        if len(state['transitions'])==0:
+            return get_options(None)
+        else:
+            previous = Transitions[state['transitions'][-1]['id']].end.index
+            return get_options(previous)
+
 
 def get_options(previous):
-    if previous==None:
-        return [
-            {'label':'bird','value':'bird'},
-            {'label':'throne','value':'throne'},
-            {'label':'star','value':'star'},
-            {'label':'random','value':'random'}
-        ]
+    with db_session:
+        if previous==None:
+            all_poses = select(i.start for i in Transitions)
+        else:
+            all_poses = select(i.end for i in Transitions if i.start.index==previous)
+        return [{'label':'Random','value':'random'}]+[{'label':pose.name,'value':pose.index} for pose in all_poses]
+
 if __name__ == '__main__':
     app.server.run(debug=True) 
     # app.run_server()
