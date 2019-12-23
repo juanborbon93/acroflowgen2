@@ -200,6 +200,6 @@ def get_options(previous):
         return [{'label':'Random','value':'random'}]+[{'label':pose.name,'value':pose.index} for pose in all_poses]
 
 if __name__ == '__main__':
-    app.server.run(debug=True) 
+    app.server.run(host='0.0.0.0', port=5000,debug=True) 
     # app.run_server()
     # serve(server,host='0.0.0.0', port=5000)
