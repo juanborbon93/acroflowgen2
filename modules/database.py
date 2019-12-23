@@ -3,6 +3,13 @@ from pony.orm import *
 db = Database()
 
 class Transitions(db.Entity):
-    start = Required(str,column='start')
-    end = Required(str,column='end')
-    index = PrimaryKey(str,column='id',auto=True)
+    start = Required('Poses',column='start',reverse='starting_pose')
+    end = Required('Poses',column='end',reverse='ending_pose')
+    index = PrimaryKey(str,column='id')
+
+class Poses(db.Entity):
+    index = PrimaryKey(int,column='id',auto=True)
+    name = Required(str,column='name')
+    starting_pose = Set('Transitions',reverse='start')
+    ending_pose = Set('Transitions',reverse='end')
+    
