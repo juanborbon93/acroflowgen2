@@ -1,4 +1,6 @@
 from pony.orm import *
+import datetime
+
 
 db = Database()
 
@@ -9,6 +11,7 @@ class Transitions(db.Entity):
     approved = Required(bool,column='approved')
     starttime = Required(int,column='starttime')
     endtime = Required(int,column='endtime')
+    createdate =Required(datetime.datetime,column="createdate")
     PrimaryKey(index,starttime)
 
 class Poses(db.Entity):

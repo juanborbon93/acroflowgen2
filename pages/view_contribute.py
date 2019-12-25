@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
 from modules.utils import *
+from datetime import datetime
 
 @db_session()
 def layout(start,end):
@@ -87,7 +88,8 @@ def add_transition(click,youtube_id,start_time,end_time,transition_data):
                 index=youtube_id,
                 approved=True,
                 starttime=start_time,
-                endtime=end_time)
+                endtime=end_time,
+                createdate=datetime.utcnow())
             db.commit()
             return 'Transition Added Succesfully. Refresh Page to See Changes'
     return None
