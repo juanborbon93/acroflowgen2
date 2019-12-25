@@ -125,11 +125,12 @@ def update_flow(submit,restart,remove,alternate_click,state,pose):
                         elegible_transitions = select(i for i in Transitions if i.end==Poses[int(pose)] and i.start == previous.end and i!=previous)
                     else: 
                         elegible_transitions = select(i for i in Transitions if i.start==Poses[int(pose)])
+                    
                 transition = elegible_transitions.random(1)
                 alternate = len(elegible_transitions)>1 and pose!='random'
                 if len(transition)>0:
                     transition_end = transition[0].end
-                    compatible_starts = select(i for i in Transitions if i.start == transition_end).count()
+                    compatible_starts = select(i for i in Transitions if i.start == transition_end and i!=transition[0]).count()
                     dead_end = compatible_starts == 0
                     state['transitions'].append(
                         {
@@ -194,7 +195,7 @@ def controls_display(data):
             with db_session:
                 db_last_transition = Transitions[last_transition['id'],last_transition['start time']]
                 last_end = db_last_transition.end.name
-                control_instructions = f'Woops... no transition staring in {last_end} exist in the database.'
+                control_instructions = f'Woops... no transition starting in {last_end} exist in the database.'
                 submit_display = {'display':'none'}
                 
         

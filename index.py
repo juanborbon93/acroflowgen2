@@ -13,7 +13,7 @@ app.title='Acro Flow Generator'
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='main-page')
+    html.Div(id='main-page',style={'margin-bottom':'2em'})
 ])
 
 @app.callback(
