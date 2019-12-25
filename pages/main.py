@@ -21,6 +21,7 @@ def layout():
             the functionality of the app. These placeholders will gradually be replaced with videos submitted by a community of contributors.
             If you would like to contribute to our library of transition videos [**CLICK HERE**](/transitions).
 
+            #### Questions/Concerns? email me: [contact@juanborbon.com](mailto:contact@juanborbon.com)
             ''',
                 style={'margin':'0 auto'}
             ),
