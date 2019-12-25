@@ -23,7 +23,7 @@ def layout(start,end):
             ))
     else:
         for transition in elegible_transitions:
-            output.append(show_video(transition.index,show_title=False))
+            output.append(show_video({'id':transition.index,'start time':transition.starttime},show_title=False))
     contribute_form = [
         html.H2(f'Add your own transition:'),
         dbc.Row(
@@ -33,6 +33,20 @@ def layout(start,end):
                         dbc.Label('Youtube ID'),
                         dbc.Input(id='youtube-id')
                     ]
+                ),
+                dbc.Col(
+                    [
+                        dbc.Label('Start Time (seconds)'),
+                        dbc.Input(id='start-time',type='number',step=1)
+                    ],
+                    style={'display':'none'}
+                ),
+                dbc.Col(
+                    [
+                        dbc.Label('End Time (seconds)'),
+                        dbc.Input(id='end-time',type='number',step=1)
+                    ],
+                    style={'display':'none'}
                 ),
                 dbc.Col(
                     [   
@@ -50,14 +64,30 @@ def layout(start,end):
 @app.callback(
     Output('add-feedback','children'),
     [Input('submit-transition','n_clicks')],
-    [State('youtube-id','value'),State('transition-info','data')]
+    [
+        State('youtube-id','value'),
+        State('start-time','value'),
+        State('end-time','value'),
+        State('transition-info','data')
+    ]
 )
-def add_transition(click,youtube_id,transition_data):
+def add_transition(click,youtube_id,start_time,end_time,transition_data):
     if click is not None:
+        if start_time==None and end_time==None:
+            start_time=0
+            end_time=0
+        if start_time>end_time:
+            return 'INPUT ERROR: CHECK START TIME AND END TIME'
         with db_session:
             start = transition_data['start']
             end = transition_data['end']
-            new_transition = Transitions(start=Poses[start],end=Poses[end],index=youtube_id,approved=True)
+            new_transition = Transitions(
+                start=Poses[start],
+                end=Poses[end],
+                index=youtube_id,
+                approved=True,
+                starttime=start_time,
+                endtime=end_time)
             db.commit()
             return 'Transition Added Succesfully. Refresh Page to See Changes'
     return None

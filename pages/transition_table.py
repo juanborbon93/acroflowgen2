@@ -4,16 +4,35 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
+from modules.utils import *
 
 
-def get_pose_options():
-    with db_session:
-        all_poses = select(i for i in Poses)
-        return [{'label':'All','value':'All'}]+[{'label':pose.name,'value':pose.index} for pose in all_poses]
+# def get_pose_options():
+#     with db_session:
+#         all_poses = select(i for i in Poses)
+#         return [{'label':'All','value':'All'}]+[{'label':pose.name,'value':pose.index} for pose in all_poses]
 
 layout = html.Div(
     [
-        html.H1('Transition Table',style={'text-align':'center','margin-top':'1em'}),
+        html.H1('Transition Library',style={'text-align':'center','margin-top':'1em'}),
+        dcc.Markdown(
+            '''
+            ### Instructions: 
+            Hi 👋. Thanks for your interest in helping grow this app 🙏. With your help, we can help acro friends from all over
+            discover new and fun flows! 
+            - Use the dropdown fields to filter the transitions and click "GET TRANSITION LIST" to view them
+            - For each entry in the list, the number under the "Existing Transitions" column is the amount of videos for that transition in our library
+            - If you would like to contribute a video, click the "View / Contribute" button next to the transition of your choice
+            - If a pose is not defined in our library, you can add it [**HERE**](/add_pose)
+            ### Video Submission Guidelines:
+            We want to ensure that the videos in our library contribute to a good user experience. For this reason, please try to follow these guidelines.
+            - Show the transition from an angle which highlights the mechanics of the move.
+            - Do not use audio in your video. The videos will be set to autoplay on the app which could be distracting if they all have sound. 
+            - Keep it short and to the point. The goal is to show a quick demo of the move, not to provide a tutorial.
+            - Make it snazzy. We dont need pro videography, but good lighting and cool backgrounds go a long way!
+            - Demonstrate skills proficiently. Videos should contain clean/smooth transitions.
+            '''
+        ),
         html.H3('Starting Position Filter:'),
         dcc.Dropdown(options=get_pose_options(),value='All',id='start-filter'),
         html.H3('Ending Position Filter:'),
@@ -43,7 +62,7 @@ def transition_table(starting,ending):
     for start in poses:
         if start.index==starting or starting=='All':
             for end in poses:
-                if start!=end and (ending=='All' or end.index==ending):
+                if (ending=='All' or end.index==ending):
                     existing_transitions_count = select(i for i in Transitions if i.start==start and i.end == end and i.approved==True).count()
                     transition_list.append(
                         {
