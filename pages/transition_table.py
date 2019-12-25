@@ -68,11 +68,13 @@ def transition_table(starting,ending):
                         {
                             'start':{
                                 'name':start.name,
-                                'id':start.index
+                                'id':start.index,
+                                'link':start.link
                             },
                             'end':{
                                 'name':end.name,
-                                'id':end.index
+                                'id':end.index,
+                                'link':end.link
                             },
                             'transitions':{
                                 'amount':existing_transitions_count,
@@ -94,11 +96,31 @@ def transition_table(starting,ending):
     ]
     table_body = []
     for transition in transition_list:
+        if transition['start']['link'] is None:
+            start_text = html.Td(transition['start']['name'])
+        else:
+            start_text = html.Td(
+                html.A(
+                    transition['start']['name'],
+                    href = transition['start']['link'],
+                    target='_blank'
+                )
+            )
+        if transition['end']['link'] is None:
+            end_text = html.Td(transition['end']['name'])
+        else:
+            end_text = html.Td(
+                html.A(
+                    transition['end']['name'],
+                    href = transition['end']['link'],
+                    target='_blank'
+                )
+            )
         table_body.append(
             html.Tr(
                 [
-                    html.Td(transition['start']['name']),
-                    html.Td(transition['end']['name']),
+                    start_text,
+                    end_text,
                     html.Td(transition['transitions']['amount']),
                     html.Td(
                         html.A(
