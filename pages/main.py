@@ -46,6 +46,18 @@ def layout():
                         ],
                         id = 'actions',
                         style={'width':'100%','margin-top':'1em'}
+                    ),
+                    # html.A(
+                    #     dbc.Button('SHARE FLOW',block=True,id='share',color='success',style={'margin-top':'1em'}),
+                    #     id='share-link'
+                    # )
+                    dbc.Card(
+                        [
+                            html.H4('Share Link:',className='card-title'),
+                            html.H6('copy this url to share this flow with friends',className='card-subtitle'),
+                            html.P(id='share-link',className='card-text')
+                        ],
+                        id='share-card'
                     )
                 ],
                 id='controls'
@@ -110,10 +122,10 @@ def show_flow(flow_state):
 )
 def update_flow(submit,restart,remove,alternate_click,state,pose):
     with db_session:
-        print(state)
+        # print(state)
         if submit is not None:
             if state['submit_clicks']<submit:
-                print(pose)
+                # print(pose)
                 if pose=='random' or pose == None:
                     if len(state['transitions'])>0:
                         previous = Transitions[state['transitions'][-1]['id'],state['transitions'][-1]['start time']]
@@ -154,7 +166,7 @@ def update_flow(submit,restart,remove,alternate_click,state,pose):
             if state['alternate_clicks']<alternate_click and state['transitions'][-1]['alternate']==True:
                 state['alternate_clicks']=alternate_click
                 state['transitions'][-1] = get_alternate(state['transitions'][-1])
-        print(state)
+        # print(state)
         return state
 
 @db_session()
@@ -176,6 +188,8 @@ def get_alternate(transition):
         Output('submit','style'),
         Output('submit','children'),
         Output('control-instructions','children'),
+        Output('share-link','children'),
+        Output('share-card','style')
     ],
     [Input('flow-state','data')]
 )
@@ -186,6 +200,8 @@ def controls_display(data):
         restart_display = {'display':'none'}
         submit_message = 'GET FIRST'
         control_instructions = 'Pick Starting Position:'
+        share_link=''
+        share_display= {'display':'none'}
     else:
         remove_display =  {}
         restart_display =  {}
@@ -198,10 +214,11 @@ def controls_display(data):
                 last_end = db_last_transition.end.name
                 control_instructions = f'Woops... no transition starting in {last_end} exist in the database.'
                 submit_display = {'display':'none'}
-                
-        
-    
-    return remove_display,restart_display,submit_display,submit_message,control_instructions 
+        share_link='www.acroflowgenerator.com/share/'
+        for transition in data['transitions']:
+            share_link = share_link+f"{transition['id']}&{transition['start time']}="
+        share_display={'margin-top':'1em'}
+    return remove_display,restart_display,submit_display,submit_message,control_instructions,share_link,share_display
     
 
 @app.callback(
