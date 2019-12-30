@@ -1,2 +1,5 @@
 dbcreds.txt
 environment.yml
+*.pyc
+*.ipynb
+test/*
